@@ -1,0 +1,48 @@
+{
+  "project_info": {
+    "project_number": "239200275659",
+    "project_id": "alignme-3f209",
+    "storage_bucket": "alignme-3f209.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:239200275659:android:9ce35bcb48bf2160849f4e",
+        "android_client_info": {
+          "package_name": "com.example.align_me"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBVBjfKm3PJwKxSPYLb_g8cDa2_S-eu6Bk"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:239200275659:android:dc3c726b8742bd49849f4e",
+        "android_client_info": {
+          "package_name": "com.example.seniorapplication"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBVBjfKm3PJwKxSPYLb_g8cDa2_S-eu6Bk"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
