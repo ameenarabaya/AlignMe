@@ -86,6 +86,7 @@ flutter:
     - assets/images/neck_tilt_right.png
     - assets/images/upper_back_leaning.png
     - assets/images/lower_back_not_supported.png
+    - assets/images/cross_legs.png
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/to/resolution-aware-images

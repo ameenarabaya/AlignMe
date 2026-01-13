@@ -22,7 +22,6 @@ class ExercisesPage extends StatelessWidget {
         ),
         centerTitle: true,
       ),
-
       body: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
         child: ListView(

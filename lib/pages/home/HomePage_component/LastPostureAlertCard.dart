@@ -26,6 +26,9 @@ class LastPostureAlertCard extends StatelessWidget {
     if (r.contains('upper back') && r.contains('not straight')) {
       return 'assets/images/upper_back_leaning.png';
     }
+    if (r.contains('legs')) {
+      return 'assets/images/cross_legs.png';
+    }
     return " ";
   }
 
