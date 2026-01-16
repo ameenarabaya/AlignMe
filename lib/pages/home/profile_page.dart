@@ -9,6 +9,7 @@ import 'package:provider/provider.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'package:path_provider/path_provider.dart';
 import 'package:printing/printing.dart';
+import 'package:intl/intl.dart';
 
 class Profile extends StatefulWidget {
   const Profile({super.key});
@@ -18,7 +19,7 @@ class Profile extends StatefulWidget {
 }
 
 class _ProfileState extends State<Profile> {
-  // ===== Get username =====
+  // ===== About Dialog =====
   void _showAboutDialog(BuildContext context) {
     showDialog(
       context: context,
@@ -68,6 +69,7 @@ class _ProfileState extends State<Profile> {
     );
   }
 
+  // ===== Get username =====
   Future<String> _getUsername() async {
     final user = FirebaseAuth.instance.currentUser;
     if (user == null) return 'User';
@@ -81,15 +83,14 @@ class _ProfileState extends State<Profile> {
         .doc(user.uid)
         .get();
 
-    return doc.data()?['username'] ??
-        user.email?.split('@').first ??
-        'User';
+    return doc.data()?['username'] ?? user.email?.split('@').first ?? 'User';
   }
 
   // ===== Logout =====
   Future<void> _logout(BuildContext context) async {
     await FirebaseAuth.instance.signOut();
 
+    if (!mounted) return;
     Navigator.pushAndRemoveUntil(
       context,
       MaterialPageRoute(builder: (_) => const LoginScreen()),
@@ -97,19 +98,25 @@ class _ProfileState extends State<Profile> {
     );
   }
 
-  // ===== Fetch Notifications =====
+  // ===== Fetch Notifications (ONLY current user) =====
   Future<List<QueryDocumentSnapshot>> _fetchNotifications() async {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user == null) return [];
+
     final snapshot = await FirebaseFirestore.instance
-        .collection('Notifications')
-        .orderBy("Timestamp",descending: true)
+        .collection('Notifications') // نفس اسم الكولكشن عندك
+        .where('userId', isEqualTo: user.uid) // ✅ أهم سطر
+        .orderBy("Timestamp", descending: true)
         .get();
-    print(snapshot.docs);
 
     return snapshot.docs;
   }
 
-  // ===== Generate PDF =====
-  Future<File> _generatePdf(List<QueryDocumentSnapshot> sessions) async {
+  // ===== Generate PDF (include username) =====
+  Future<File> _generatePdf({
+    required List<QueryDocumentSnapshot> notifications,
+    required String username,
+  }) async {
     final pdf = pw.Document();
 
     pdf.addPage(
@@ -122,27 +129,30 @@ class _ProfileState extends State<Profile> {
               fontWeight: pw.FontWeight.bold,
             ),
           ),
-          pw.SizedBox(height: 20),
+          pw.SizedBox(height: 6),
+          pw.Text(
+            'Report for: $username',
+            style: const pw.TextStyle(fontSize: 12),
+          ),
+          pw.SizedBox(height: 16),
 
           pw.Table.fromTextArray(
             headers: ['Date & Time', 'Reason'],
             headerStyle: pw.TextStyle(fontWeight: pw.FontWeight.bold),
             cellAlignment: pw.Alignment.centerLeft,
-            data: sessions.map((doc) {
+            data: notifications.map((doc) {
               final data = doc.data() as Map<String, dynamic>;
 
               final ts = data['Timestamp'];
               final reason = data['reason'];
 
-              final dateText = ts != null
-                  ? (ts as Timestamp)
-                  .toDate()
-                  .toString()
-                  .substring(0, 16)
-                  : 'Unknown date';
+              String dateText = 'Unknown date';
+              if (ts is Timestamp) {
+                final dt = ts.toDate();
+                dateText = DateFormat('dd MMM yyyy, HH:mm').format(dt);
+              }
 
-              final reasonText = reason ?? 'No description';
-
+              final reasonText = (reason ?? 'No description').toString();
               return [dateText, reasonText];
             }).toList(),
           ),
@@ -157,20 +167,23 @@ class _ProfileState extends State<Profile> {
     return file;
   }
 
-
   // ===== Download PDF =====
   Future<void> _downloadPdf(BuildContext context) async {
     try {
-      final sessions = await _fetchNotifications();
+      final username = await _getUsername();
+      final notifications = await _fetchNotifications();
 
-      if (sessions.isEmpty) {
+      if (notifications.isEmpty) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('No sitting sessions found')),
+          const SnackBar(content: Text('No notifications found for this user')),
         );
         return;
       }
 
-      final file = await _generatePdf(sessions);
+      final file = await _generatePdf(
+        notifications: notifications,
+        username: username,
+      );
 
       await Printing.sharePdf(
         bytes: await file.readAsBytes(),
@@ -178,7 +191,7 @@ class _ProfileState extends State<Profile> {
       );
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Error generating PDF')),
+        SnackBar(content: Text('Error generating PDF: $e')),
       );
     }
   }
@@ -203,8 +216,7 @@ class _ProfileState extends State<Profile> {
                 CircleAvatar(
                   radius: 45,
                   backgroundColor: const Color(0xFF6F9F97),
-                  child:
-                  const Icon(Icons.person, size: 50, color: Colors.white),
+                  child: const Icon(Icons.person, size: 50, color: Colors.white),
                 ),
                 const SizedBox(height: 12),
                 FutureBuilder<String>(
@@ -257,7 +269,7 @@ class _ProfileState extends State<Profile> {
           _cardTile(
             icon: Icons.info_outline,
             title: 'About AlignMe',
-              onTap: () => _showAboutDialog(context),
+            onTap: () => _showAboutDialog(context),
           ),
 
           _cardTile(
@@ -273,7 +285,6 @@ class _ProfileState extends State<Profile> {
   }
 
   // ===== Helpers =====
-
   Widget _sectionTitle(String text) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 8),

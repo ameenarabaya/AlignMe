@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 
@@ -15,6 +16,19 @@ class PostureWeekChartCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final colors = Theme.of(context).colorScheme;
 
+    final uid = FirebaseAuth.instance.currentUser?.uid;
+    if (uid == null) {
+      return Container(
+        padding: const EdgeInsets.all(14),
+        decoration: BoxDecoration(
+          color: colors.surfaceContainerHighest,
+          borderRadius: BorderRadius.circular(14),
+          border: Border.all(color: colors.outlineVariant),
+        ),
+        child: const Text('Please login again'),
+      );
+    }
+
     final nowFixed = _applyFixedOffset(DateTime.now().toUtc());
 
     // بداية اليوم (بالتوقيت الثابت)
@@ -27,11 +41,10 @@ class PostureWeekChartCard extends StatelessWidget {
     final startUtc = startFixed.subtract(Duration(minutes: fixedOffsetMinutes));
 
     final stream = FirebaseFirestore.instance
-        .collection('Notifications')
-    // إذا عندك userId داخل الوثيقة فعّلي السطر:
-    // .where('userId', isEqualTo: FirebaseAuth.instance.currentUser?.uid)
+        .collection('Notifications') // ✅ نفس اسم الكولكشن عندك (N كبيرة)
+        .where('userId', isEqualTo: uid) // ✅ فلترة حسب اليوزر
         .where('Timestamp', isGreaterThanOrEqualTo: Timestamp.fromDate(startUtc))
-        .orderBy('Timestamp')
+        .orderBy('Timestamp') // ascending
         .snapshots();
 
     return Container(
@@ -56,11 +69,20 @@ class PostureWeekChartCard extends StatelessWidget {
             child: StreamBuilder<QuerySnapshot>(
               stream: stream,
               builder: (context, snapshot) {
+                if (snapshot.hasError) {
+                  return Center(
+                    child: Padding(
+                      padding: const EdgeInsets.all(10),
+                      child: Text(
+                        'Firestore error:\n${snapshot.error}',
+                        style: const TextStyle(color: Colors.red, fontSize: 12),
+                      ),
+                    ),
+                  );
+                }
+
                 if (snapshot.connectionState == ConnectionState.waiting) {
                   return const Center(child: CircularProgressIndicator());
-                }
-                if (snapshot.hasError) {
-                  return const Center(child: Text('Error loading chart'));
                 }
 
                 final docs = snapshot.data?.docs ?? [];
@@ -115,10 +137,12 @@ class PostureWeekChartCard extends StatelessWidget {
                       ),
                     ),
                     titlesData: FlTitlesData(
-                      rightTitles:
-                      const AxisTitles(sideTitles: SideTitles(showTitles: false)),
-                      topTitles:
-                      const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+                      rightTitles: const AxisTitles(
+                        sideTitles: SideTitles(showTitles: false),
+                      ),
+                      topTitles: const AxisTitles(
+                        sideTitles: SideTitles(showTitles: false),
+                      ),
                       leftTitles: AxisTitles(
                         sideTitles: SideTitles(
                           showTitles: true,
@@ -206,11 +230,6 @@ class PostureWeekChartCard extends StatelessWidget {
   String _weekdayLabel(DateTime dt) {
     const en = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
     return en[dt.weekday - 1];
-
-    // إذا بدك عربي:
-    // const ar = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
-    // أو: ['الإثنين','الثلاثاء','الأربعاء','الخميس','الجمعة','السبت','الأحد']
-    // بس انتبهي: رح تكون طويلة على محور الشارت.
   }
 
   double _niceInterval(double maxY) {

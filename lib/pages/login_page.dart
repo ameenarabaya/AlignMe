@@ -33,12 +33,13 @@ class _LoginScreenState extends State<LoginScreen> {
     setState(() => _isLoading = true);
 
     try {
-      await FirebaseAuth.instance.signInWithEmailAndPassword(
+     final cred = await FirebaseAuth.instance.signInWithEmailAndPassword(
         email: _emailController.text.trim(),
         password: _passwordController.text,
       );
 
       _saveFcmToken();
+      await _setChairActive(cred.user!.uid);
 
       if (!mounted) return;
       Navigator.pushReplacement(
@@ -70,6 +71,19 @@ class _LoginScreenState extends State<LoginScreen> {
 
       await FirebaseFirestore.instance.collection('users').doc(user.uid).set({
         'fcmToken': token,
+      }, SetOptions(merge: true));
+    } catch (e) {}
+  }
+  Future<void> _setChairActive(String uid) async {
+    try {
+      final u = await FirebaseFirestore.instance.collection('users').doc(uid).get();
+      final username = u.data()?['username'];
+
+      await FirebaseFirestore.instance.collection('chairs').doc('chair_01').set({
+        'active': true,
+        'currentUserId': uid,
+        'username': username,
+        'updatedAt': FieldValue.serverTimestamp(),
       }, SetOptions(merge: true));
     } catch (e) {}
   }

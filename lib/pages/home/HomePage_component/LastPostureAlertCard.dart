@@ -1,5 +1,6 @@
 import 'package:alignme/pages/home/notification_page.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
@@ -11,25 +12,23 @@ class LastPostureAlertCard extends StatelessWidget {
     final r = reason.toLowerCase();
 
     if (r.contains('neck') && r.contains('left')) {
-      print("hello");
       return 'assets/images/neck_tilt_left.png';
     }
-
     if (r.contains('neck') && r.contains('right')) {
       return 'assets/images/neck_tilt_right.png';
     }
-
     if (r.contains('lower back') && r.contains('not touching')) {
       return 'assets/images/lower_back_not_supported.png';
     }
-
     if (r.contains('upper back') && r.contains('not straight')) {
       return 'assets/images/upper_back_leaning.png';
     }
     if (r.contains('legs')) {
       return 'assets/images/cross_legs.png';
     }
-    return " ";
+
+    // ✅ مهم: رجّعي أيقونة افتراضية بدل " " عشان Image.asset ما يكسر
+    return 'assets/images/upper_back_leaning.png';
   }
 
   // ===== TIME AGO FORMAT =====
@@ -46,28 +45,51 @@ class LastPostureAlertCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
 
+    final uid = FirebaseAuth.instance.currentUser?.uid;
+    if (uid == null) return const SizedBox(); // مش مسجل دخول
+
     return StreamBuilder<QuerySnapshot>(
       stream: FirebaseFirestore.instance
           .collection('Notifications')
+          .where('userId', isEqualTo: uid) // ✅ فلترة لليوزر الحالي
           .orderBy('Timestamp', descending: true)
           .limit(1)
           .snapshots(),
       builder: (context, snapshot) {
+        if (snapshot.hasError) {
+          // ✅ لو طلع Index ناقص رح يبين هون
+          return Padding(
+            padding: const EdgeInsets.all(8),
+            child: Text(
+              'Firestore error:\n${snapshot.error}',
+              style: const TextStyle(color: Colors.red, fontSize: 12),
+            ),
+          );
+        }
+
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const SizedBox(); // ما نعرض loading هون عشان كارد صغير
+        }
+
         if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
           return const SizedBox();
         }
 
         final doc = snapshot.data!.docs.first;
-        final reason = doc['reason'] as String;
-        final timestamp = (doc['Timestamp'] as Timestamp).toDate();
+        final data = doc.data() as Map<String, dynamic>;
+
+        final reason = (data['reason'] ?? '').toString();
+
+        final ts = data['Timestamp'];
+        if (ts is! Timestamp) return const SizedBox();
+
+        final timestamp = ts.toDate();
 
         return GestureDetector(
           onTap: () {
             Navigator.pushReplacement(
               context,
-              MaterialPageRoute(
-                builder: (context) => const NotificationPage(),
-              ),
+              MaterialPageRoute(builder: (context) => const NotificationPage()),
             );
           },
           child: Container(
@@ -83,7 +105,7 @@ class LastPostureAlertCard extends StatelessWidget {
                 Image.asset(
                   _getPostureIconFromReason(reason),
                   width: 48,
-                  height: 48
+                  height: 48,
                 ),
 
                 const SizedBox(width: 16),
@@ -102,7 +124,7 @@ class LastPostureAlertCard extends StatelessWidget {
                       ),
                       const SizedBox(height: 6),
                       Text(
-                        reason,
+                        reason.isEmpty ? 'Posture alert' : reason,
                         style: theme.textTheme.bodyMedium,
                         maxLines: 3,
                         overflow: TextOverflow.ellipsis,
