@@ -41,48 +41,46 @@ class DefaultFirebaseOptions {
   }
 
   static const FirebaseOptions web = FirebaseOptions(
-    apiKey: 'AIzaSyB23PSUf1A8YOvlhNf6wyyljmF5gzWRJ-0',
-    appId: '1:239200275659:web:81ed2e37855881e7849f4e',
-    messagingSenderId: '239200275659',
-    projectId: 'alignme-3f209',
-    authDomain: 'alignme-3f209.firebaseapp.com',
-    storageBucket: 'alignme-3f209.firebasestorage.app',
-    measurementId: 'G-RN4YL9RYT2',
+    apiKey: 'AIzaSyChyPKUhNHD8o_YbDvuWDncseUOsc2uTII',
+    appId: '1:304973886723:web:ecd5007733ecb30005e536',
+    messagingSenderId: '304973886723',
+    projectId: 'align-me',
+    authDomain: 'align-me.firebaseapp.com',
+    storageBucket: 'align-me.firebasestorage.app',
   );
 
   static const FirebaseOptions android = FirebaseOptions(
-    apiKey: 'AIzaSyBVBjfKm3PJwKxSPYLb_g8cDa2_S-eu6Bk',
-    appId: '1:239200275659:android:9ce35bcb48bf2160849f4e',
-    messagingSenderId: '239200275659',
-    projectId: 'alignme-3f209',
-    storageBucket: 'alignme-3f209.firebasestorage.app',
+    apiKey: 'AIzaSyALeo0Orl14p21skBlQbb9vY9T2sYJIp4U',
+    appId: '1:304973886723:android:308d47bd34dcc61f05e536',
+    messagingSenderId: '304973886723',
+    projectId: 'align-me',
+    storageBucket: 'align-me.firebasestorage.app',
   );
 
   static const FirebaseOptions ios = FirebaseOptions(
-    apiKey: 'AIzaSyCDcA7JMzWTvXseJViFfOelttE6ukeZEoU',
-    appId: '1:239200275659:ios:0a4e70be02241e10849f4e',
-    messagingSenderId: '239200275659',
-    projectId: 'alignme-3f209',
-    storageBucket: 'alignme-3f209.firebasestorage.app',
+    apiKey: 'AIzaSyCGeElRzFIZTKEIqklpwkVaLdZsBqqEHc4',
+    appId: '1:304973886723:ios:ddaa47425fe3297f05e536',
+    messagingSenderId: '304973886723',
+    projectId: 'align-me',
+    storageBucket: 'align-me.firebasestorage.app',
     iosBundleId: 'com.example.alignMe',
   );
 
   static const FirebaseOptions macos = FirebaseOptions(
-    apiKey: 'AIzaSyCDcA7JMzWTvXseJViFfOelttE6ukeZEoU',
-    appId: '1:239200275659:ios:0a4e70be02241e10849f4e',
-    messagingSenderId: '239200275659',
-    projectId: 'alignme-3f209',
-    storageBucket: 'alignme-3f209.firebasestorage.app',
+    apiKey: 'AIzaSyCGeElRzFIZTKEIqklpwkVaLdZsBqqEHc4',
+    appId: '1:304973886723:ios:ddaa47425fe3297f05e536',
+    messagingSenderId: '304973886723',
+    projectId: 'align-me',
+    storageBucket: 'align-me.firebasestorage.app',
     iosBundleId: 'com.example.alignMe',
   );
 
   static const FirebaseOptions windows = FirebaseOptions(
-    apiKey: 'AIzaSyB23PSUf1A8YOvlhNf6wyyljmF5gzWRJ-0',
-    appId: '1:239200275659:web:eb94106e5cfbb585849f4e',
-    messagingSenderId: '239200275659',
-    projectId: 'alignme-3f209',
-    authDomain: 'alignme-3f209.firebaseapp.com',
-    storageBucket: 'alignme-3f209.firebasestorage.app',
-    measurementId: 'G-YQC731XHMY',
+    apiKey: 'AIzaSyChyPKUhNHD8o_YbDvuWDncseUOsc2uTII',
+    appId: '1:304973886723:web:183093946b72d29a05e536',
+    messagingSenderId: '304973886723',
+    projectId: 'align-me',
+    authDomain: 'align-me.firebaseapp.com',
+    storageBucket: 'align-me.firebasestorage.app',
   );
 }
